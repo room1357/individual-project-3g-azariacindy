@@ -1,5 +1,9 @@
 # pemrograman_mobile
 
+### Azaria Cindy Sahasika
+### 2341760169
+### SIB - 3G
+
 A new Flutter project.
 
 ## Getting Started
