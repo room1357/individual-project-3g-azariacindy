@@ -11,38 +11,33 @@ class RegisterScreen extends StatelessWidget {
         title: Text('Daftar'),
         backgroundColor: Colors.blue,
       ),
-      body: Center( // <- Tambahkan Center di sini
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center, // vertikal tengah
-            crossAxisAlignment: CrossAxisAlignment.center, // horizontal tengah
-            children: [
-              // Form fields...
-
-              // Tombol register
-              ElevatedButton(
-                onPressed: () {
-                  // Navigasi ke HomeScreen dengan pushReplacement
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                  );
-                },
-                child: Text('DAFTAR'),
-              ),
-
-              SizedBox(height: 8), // beri jarak sedikit
-
-              // Link kembali ke login
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context); // Kembali ke LoginScreen
-                },
-                child: Text('Sudah punya akun? Masuk'),
-              ),
-            ],
-          ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Form fields...
+            
+            // Tombol register
+            ElevatedButton(
+              onPressed: () {
+                // Navigasi ke HomeScreen dengan pushReplacement
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                );
+              },
+              child: Text('DAFTAR'),
+            ),
+            
+            // Link kembali ke login
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Kembali ke LoginScreen
+              },
+              child: Text('Sudah punya akun? Masuk'),
+            ),
+          ],
         ),
       ),
     );
