@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'expense_list_screen.dart';
+import 'profile_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -45,38 +47,26 @@ class HomeScreen extends StatelessWidget {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 children: [
-                  _buildDashboardCard(
-                    'Pengeluaran',
-                    Icons.attach_money,
-                    Colors.green,
-                    () {
-                      // Navigasi ke ExpenseListScreen
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ExpenseListScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildDashboardCard(
-                    'Profil',
-                    Icons.person,
-                    Colors.blue,
-                    null,
-                  ),
-                  _buildDashboardCard(
-                    'Pesan',
-                    Icons.message,
-                    Colors.orange,
-                    null,
-                  ),
-                  _buildDashboardCard(
-                    'Pengaturan',
-                    Icons.settings,
-                    Colors.purple,
-                    null,
-                  ),
+                  _buildDashboardCard('Pengeluaran', Icons.attach_money, Colors.green, () {
+                    // Navigasi ke ExpenseListScreen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ExpenseListScreen()),
+                    );
+                  }),
+                  _buildDashboardCard('Profil', Icons.person, Colors.blue, () {
+                    Navigator.push(   
+                      context,
+                      MaterialPageRoute(builder: (context) => const ProfileScreen()), 
+                    );
+                  }),
+                  _buildDashboardCard('Pesan', Icons.message, Colors.orange, null),
+                  _buildDashboardCard('Pengaturan', Icons.settings, Colors.purple, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                    );
+                  }),
                 ],
               ),
             ),
@@ -86,42 +76,34 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDashboardCard(
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback? onTap,
-  ) {
+  Widget _buildDashboardCard(String title, IconData icon, Color color, VoidCallback? onTap) {
     return Card(
       elevation: 4,
       child: Builder(
-        builder:
-            (context) => InkWell(
-              onTap:
-                  onTap ??
-                  () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Fitur $title segera hadir!')),
-                    );
-                  },
-              child: Container(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(icon, size: 48, color: color),
-                    SizedBox(height: 12),
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+        builder: (context) => InkWell(
+          onTap: onTap ?? () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Fitur $title segera hadir!')),
+            );
+          },
+          child: Container(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 48, color: color),
+                SizedBox(height: 12),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
+              ],
             ),
+          ),
+        ),
       ),
     );
   }
