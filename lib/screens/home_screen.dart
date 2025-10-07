@@ -3,6 +3,10 @@ import 'login_screen.dart';
 import 'expense_list_screen.dart';
 import 'profile_screen.dart';
 import 'settings_screen.dart';
+import 'advanced_expense_list_screen.dart';
+import 'catergory_screen.dart';
+import 'statistics_screen.dart';
+import '../services/expense_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -65,6 +69,26 @@ class HomeScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                    );
+                  }),
+                  _buildDashboardCard('Pengeluaran Advanced', Icons.analytics, Colors.teal, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AdvancedExpenseListScreen()),
+                    );
+                  }),
+                  _buildDashboardCard('Kategori', Icons.category, Colors.teal, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CategoryScreen()),
+                    );
+                  }),
+                  _buildDashboardCard('Statistik', Icons.bar_chart, Colors.indigo, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => StatisticsScreen(expenses: ExpenseService.expenses), 
+                      ),
                     );
                   }),
                 ],
