@@ -32,13 +32,13 @@ dependencies:
     sdk: flutter
   path_provider: ^2.1.2
   dart_json_mapper: ^2.2.7
-  fl_chart: ^0.70.2
+  fl_chart: ^1.1.1
   shared_preferences: ^2.2.2
-  firebase_core: ^2.10.0
-  firebase_auth: ^4.4.0
-  cloud_firestore: ^4.6.0
-  google_sign_in: ^6.1.0         # optional jika mau Google Sign-In
-  flutter_secure_storage: ^8.1.0 # optional untuk menyimpan tokens local
+  firebase_core: ^4.1.1
+  firebase_auth: ^6.1.0
+  cloud_firestore: ^6.0.2
+  google_sign_in: ^7.2.0         # optional jika mau Google Sign-In
+  flutter_secure_storage: ^9.2.4 # optional untuk menyimpan tokens local
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -54,7 +54,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

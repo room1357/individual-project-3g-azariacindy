@@ -51,13 +51,13 @@ class HomeScreen extends StatelessWidget {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 children: [
-                  _buildDashboardCard('Pengeluaran', Icons.attach_money, Colors.green, () {
-                    // Navigasi ke ExpenseListScreen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const ExpenseListScreen()),
-                    );
-                  }),
+                  // _buildDashboardCard('Pengeluaran', Icons.attach_money, Colors.green, () {
+                  //   // Navigasi ke ExpenseListScreen
+                  //   Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(builder: (context) => const ExpenseListScreen()),
+                  //   );
+                  // }),
                   _buildDashboardCard('Profil', Icons.person, Colors.blue, () {
                     Navigator.push(   
                       context,
