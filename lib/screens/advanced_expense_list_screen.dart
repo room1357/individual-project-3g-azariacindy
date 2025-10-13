@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/expense.dart';
 import '../services/expense_service.dart';
 import '../services/storage_service.dart';
+import '../services/export_service.dart';
+import 'package:printing/printing.dart';
 import 'add_expense_screen.dart';
 import 'edit_expense_screen.dart';
 
@@ -13,10 +16,9 @@ class AdvancedExpenseListScreen extends StatefulWidget {
       _AdvancedExpenseListScreenState();
 }
 
-class _AdvancedExpenseListScreenState
-    extends State<AdvancedExpenseListScreen> {
+class _AdvancedExpenseListScreenState extends State<AdvancedExpenseListScreen> {
   List<Expense> filteredExpenses = [];
-  List<String> categories = ['Semua']; // ⬅️ kategori dari storage
+  List<String> categories = ['Semua'];
   String selectedCategory = 'Semua';
   TextEditingController searchController = TextEditingController();
 
@@ -27,9 +29,8 @@ class _AdvancedExpenseListScreenState
   }
 
   Future<void> _loadExpensesAndCategories() async {
-    await ExpenseService.loadData(); // load pengeluaran
-    final loadedCategories =
-        await StorageService.loadCategories(); // load kategori
+    await ExpenseService.loadData();
+    final loadedCategories = await StorageService.loadCategories();
 
     setState(() {
       filteredExpenses = ExpenseService.expenses;
@@ -70,14 +71,31 @@ class _AdvancedExpenseListScreenState
   }
 
   Future<void> _deleteExpense(String id) async {
-    // 🔑 Hapus expense dari service
     await ExpenseService.deleteExpense(id);
     await _loadExpensesAndCategories();
 
-    // Snackbar konfirmasi
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Pengeluaran berhasil dihapus")),
     );
+  }
+
+  Future<void> _exportToPDF() async {
+    try {
+      final path = await ExportService.exportToPDF(filteredExpenses);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Berhasil export ke PDF: $path')),
+      );
+
+      // Buka preview PDF langsung
+      await Printing.layoutPdf(onLayout: (_) async {
+        final file = File(path);
+        return await file.readAsBytes();
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal export: $e')),
+      );
+    }
   }
 
   @override
@@ -87,6 +105,13 @@ class _AdvancedExpenseListScreenState
         title: const Text('Pengeluaran Advanced'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf),
+            tooltip: 'Export ke PDF',
+            onPressed: _exportToPDF,
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -184,12 +209,10 @@ class _AdvancedExpenseListScreenState
                                 icon: const Icon(Icons.delete,
                                     color: Colors.red),
                                 onPressed: () async {
-                                  // Konfirmasi hapus
                                   final confirm = await showDialog<bool>(
                                     context: context,
                                     builder: (ctx) => AlertDialog(
-                                      title:
-                                          const Text("Hapus Pengeluaran?"),
+                                      title: const Text("Hapus Pengeluaran?"),
                                       content: const Text(
                                           "Apakah kamu yakin ingin menghapus data ini?"),
                                       actions: [
