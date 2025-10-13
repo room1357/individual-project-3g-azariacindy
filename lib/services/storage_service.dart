@@ -25,6 +25,15 @@ class StorageService {
         .toList();
   }
 
+  static Future<void> updateUser(AppUser oldUser, AppUser newUser) async {
+  final users = await loadUsers();
+  final index = users.indexWhere((u) => u.username == oldUser.username);
+  if (index != -1) {
+    users[index] = newUser;
+    await saveUsers(users);
+  }
+  }
+
   static Future<void> saveUsers(List<AppUser> users) async {
     final prefs = await SharedPreferences.getInstance();
     final jsonData = users
@@ -62,6 +71,14 @@ class StorageService {
   static Future<void> clearCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_currentUserKey);
+  }
+
+  static Future<void> deleteUserData(String username) async {
+  final prefs = await SharedPreferences.getInstance();
+
+  await prefs.remove('expenses_$username');
+  await prefs.remove('categories_$username');
+  // Jika kamu menyimpan setting lain per user, tambahkan di sini juga.
   }
 
   /// ==================== EXPENSE ====================

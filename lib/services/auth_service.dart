@@ -28,5 +28,21 @@ class AuthService {
     }
   }
 
+    static Future<bool> deleteAccount(String username) async {
+    final users = await StorageService.loadUsers();
+
+    // Cari dan hapus user
+    users.removeWhere((u) => u.username == username);
+    await StorageService.saveUsers(users);
+
+    // Hapus data lain milik user
+    await StorageService.deleteUserData(username);
+
+    // Logout otomatis
+    await StorageService.clearCurrentUser();
+
+    return true;
+  }
+
   static Future<void> logout() => StorageService.clearCurrentUser();
 }
