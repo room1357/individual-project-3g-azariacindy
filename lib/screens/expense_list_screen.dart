@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/expense.dart';
 import 'add_expense_screen.dart';
 import '../services/expense_service.dart';
+import '../services/storage_service.dart';
+import '../models/user.dart';
 
 class ExpenseListScreen extends StatefulWidget {
   const ExpenseListScreen({super.key});
@@ -11,19 +13,36 @@ class ExpenseListScreen extends StatefulWidget {
 }
 
 class _ExpenseListScreenState extends State<ExpenseListScreen> {
+  List<Expense> expenses = [];
+  AppUser? currentUser;
+
   @override
   void initState() {
     super.initState();
-    // Pastikan data terbaru dimuat ketika screen pertama kali dibuka
-    ExpenseService.loadData().then((_) {
-      setState(() {});
+    _loadUserAndData();
+  }
+
+  Future<void> _loadUserAndData() async {
+    final user = await StorageService.getCurrentUser();
+    if (user == null) return;
+
+    await ExpenseService.loadData(user.username);
+    setState(() {
+      currentUser = user;
+      expenses = ExpenseService.getExpenses(user.username);
+    });
+  }
+
+  Future<void> _refreshData() async {
+    if (currentUser == null) return;
+    await ExpenseService.loadData(currentUser!.username);
+    setState(() {
+      expenses = ExpenseService.getExpenses(currentUser!.username);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final expenses = ExpenseService.expenses; // ✅ ambil dari service
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Daftar Pengeluaran'),
@@ -40,7 +59,8 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   child: ListTile(
                     title: Text(expense.title),
-                    subtitle: Text('${expense.category} • ${expense.formattedDate}'),
+                    subtitle:
+                        Text('${expense.category} • ${expense.formattedDate}'),
                     trailing: Text(
                       expense.formattedAmount,
                       style: const TextStyle(
@@ -58,11 +78,8 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
             context,
             MaterialPageRoute(builder: (context) => const AddExpenseScreen()),
           );
-
           if (result == true) {
-            // ✅ refresh data setelah tambah pengeluaran baru
-            await ExpenseService.loadData();
-            setState(() {});
+            await _refreshData();
           }
         },
         child: const Icon(Icons.add),

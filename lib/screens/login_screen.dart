@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'register_screen.dart';
+import '../services/auth_service.dart';
+import '../models/user.dart';
 import 'home_screen.dart';
-import '../services/storage_service.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,28 +12,28 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController userOrEmailController = TextEditingController();
+  final TextEditingController identifierController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool isLoading = false;
 
-  Future<void> _login() async {
-    final input = userOrEmailController.text.trim();
+  Future<void> _handleLogin() async {
+    setState(() => isLoading = true);
+
+    final identifier = identifierController.text.trim();
     final password = passwordController.text.trim();
 
-    final userData = await StorageService.getUser();
-    final savedUsername = userData['username'];
-    final savedEmail = userData['email'];
-    final savedPassword = userData['password'];
+    final user = await AuthService.login(identifier, password);
 
-    if ((input == savedUsername || input == savedEmail) &&
-        password == savedPassword) {
-      await StorageService.setLoginStatus(true);
+    setState(() => isLoading = false);
+
+    if (user != null) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Username/Email atau password salah!')),
+        const SnackBar(content: Text("Username/email atau password salah")),
       );
     }
   }
@@ -49,19 +50,11 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: const BoxDecoration(
-                color: Colors.blue,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.person, size: 50, color: Colors.white),
-            ),
+            const Icon(Icons.account_circle, size: 100, color: Colors.blue),
             const SizedBox(height: 32),
 
             TextField(
-              controller: userOrEmailController,
+              controller: identifierController,
               decoration: const InputDecoration(
                 labelText: 'Username atau Email',
                 border: OutlineInputBorder(),
@@ -84,19 +77,21 @@ class _LoginScreenState extends State<LoginScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _login,
+                onPressed: isLoading ? null : _handleLogin,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text(
-                  'MASUK',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                child: isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        'MASUK',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
               ),
             ),
-            const SizedBox(height: 16),
 
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -105,8 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const RegisterScreen()),
+                      MaterialPageRoute(builder: (context) => const RegisterScreen()),
                     );
                   },
                   child: const Text('Daftar'),

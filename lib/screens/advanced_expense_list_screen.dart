@@ -29,17 +29,23 @@ class _AdvancedExpenseListScreenState extends State<AdvancedExpenseListScreen> {
   }
 
   Future<void> _loadExpensesAndCategories() async {
-    await ExpenseService.loadData();
-    final loadedCategories = await StorageService.loadCategories();
+    final user = await StorageService.getCurrentUser();
+    if (user == null) return;
+
+    await ExpenseService.loadData(user.username);
+    final loadedCategories = await StorageService.loadCategories(user.username);
 
     setState(() {
-      filteredExpenses = ExpenseService.expenses;
+      filteredExpenses = ExpenseService.getExpenses(user.username);
       categories = ['Semua', ...loadedCategories.map((c) => c.name)];
     });
   }
 
-  void _filterExpenses() {
-    final all = ExpenseService.expenses;
+  void _filterExpenses() async {
+    final user = await StorageService.getCurrentUser();
+    if (user == null) return;
+
+    final all = ExpenseService.getExpenses(user.username);
     setState(() {
       filteredExpenses = all.where((expense) {
         final matchesSearch = searchController.text.isEmpty ||
@@ -71,7 +77,10 @@ class _AdvancedExpenseListScreenState extends State<AdvancedExpenseListScreen> {
   }
 
   Future<void> _deleteExpense(String id) async {
-    await ExpenseService.deleteExpense(id);
+    final user = await StorageService.getCurrentUser();
+    if (user == null) return;
+
+    await ExpenseService.deleteExpense(user.username, id);
     await _loadExpensesAndCategories();
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -86,7 +95,6 @@ class _AdvancedExpenseListScreenState extends State<AdvancedExpenseListScreen> {
         SnackBar(content: Text('Berhasil export ke PDF: $path')),
       );
 
-      // Buka preview PDF langsung
       await Printing.layoutPdf(onLayout: (_) async {
         final file = File(path);
         return await file.readAsBytes();
@@ -115,7 +123,6 @@ class _AdvancedExpenseListScreenState extends State<AdvancedExpenseListScreen> {
       ),
       body: Column(
         children: [
-          // 🔎 Search bar
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
@@ -128,8 +135,6 @@ class _AdvancedExpenseListScreenState extends State<AdvancedExpenseListScreen> {
               onChanged: (_) => _filterExpenses(),
             ),
           ),
-
-          // 🏷️ Category filter
           Container(
             height: 50,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -154,8 +159,6 @@ class _AdvancedExpenseListScreenState extends State<AdvancedExpenseListScreen> {
                   .toList(),
             ),
           ),
-
-          // 📊 Statistik
           Container(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -168,8 +171,6 @@ class _AdvancedExpenseListScreenState extends State<AdvancedExpenseListScreen> {
               ],
             ),
           ),
-
-          // 📜 Daftar pengeluaran
           Expanded(
             child: filteredExpenses.isEmpty
                 ? const Center(child: Text('Tidak ada pengeluaran ditemukan'))
@@ -187,7 +188,6 @@ class _AdvancedExpenseListScreenState extends State<AdvancedExpenseListScreen> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // Tombol edit
                               IconButton(
                                 icon: const Icon(Icons.edit,
                                     color: Colors.orange),
@@ -204,7 +204,6 @@ class _AdvancedExpenseListScreenState extends State<AdvancedExpenseListScreen> {
                                   }
                                 },
                               ),
-                              // Tombol hapus
                               IconButton(
                                 icon: const Icon(Icons.delete,
                                     color: Colors.red),

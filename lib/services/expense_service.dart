@@ -2,32 +2,36 @@ import '../models/expense.dart';
 import 'storage_service.dart';
 
 class ExpenseService {
+  static final Map<String, List<Expense>> _userExpenses = {};
 
-  static List<Expense> expenses = [];
-
-  /// Load data dari file JSON
-  static Future<void> loadData() async {
-    expenses = await StorageService.loadExpenses();
+  static Future<void> loadData(String username) async {
+    final loaded = await StorageService.loadExpenses(username);
+    _userExpenses[username] = loaded;
   }
 
-  /// Tambah expense baru
-  static Future<void> addExpense(Expense expense) async {
+  static List<Expense> getExpenses(String username) {
+    return _userExpenses[username] ?? [];
+  }
+
+  static Future<void> addExpense(String username, Expense expense) async {
+    final expenses = _userExpenses[username] ?? [];
     expenses.add(expense);
-    await StorageService.saveExpenses(expenses);
+    _userExpenses[username] = expenses;
+    await StorageService.saveExpenses(username, expenses);
   }
 
-  /// Update expense (edit)
-  static Future<void> updateExpense(Expense updatedExpense) async {
-    int index = expenses.indexWhere((e) => e.id == updatedExpense.id);
+  static Future<void> updateExpense(String username, Expense updated) async {
+    final expenses = _userExpenses[username] ?? [];
+    final index = expenses.indexWhere((e) => e.id == updated.id);
     if (index != -1) {
-      expenses[index] = updatedExpense;
-      await StorageService.saveExpenses(expenses);
+      expenses[index] = updated;
+      await StorageService.saveExpenses(username, expenses);
     }
   }
 
-  /// Hapus expense
-  static Future<void> deleteExpense(String id) async {
+  static Future<void> deleteExpense(String username, String id) async {
+    final expenses = _userExpenses[username] ?? [];
     expenses.removeWhere((e) => e.id == id);
-    await StorageService.saveExpenses(expenses);
+    await StorageService.saveExpenses(username, expenses);
   }
 }

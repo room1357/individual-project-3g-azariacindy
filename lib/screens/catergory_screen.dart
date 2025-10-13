@@ -15,36 +15,51 @@ class _CategoryScreenState extends State<CategoryScreen> {
   @override
   void initState() {
     super.initState();
-    _loadCategories(); // ⬅️ load data saat screen dibuka
+    _loadCategories(); // load data saat screen dibuka
   }
 
   Future<void> _loadCategories() async {
-    categories = await StorageService.loadCategories();
+    final user = await StorageService.getCurrentUser();
+    if (user == null) return;
+
+    // Pastikan user punya kategori default
+    await StorageService.ensureDefaultCategories(user.username);
+
+    categories = await StorageService.loadCategories(user.username);
     setState(() {});
   }
 
   Future<void> _addCategory(String name) async {
+    final user = await StorageService.getCurrentUser();
+    if (user == null) return;
+
     final newCategory = Category(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: name,
     );
     categories.add(newCategory);
-    await StorageService.saveCategories(categories); // ⬅️ simpan
+    await StorageService.saveCategories(user.username, categories);
     setState(() {});
   }
 
   Future<void> _editCategory(Category category, String newName) async {
+    final user = await StorageService.getCurrentUser();
+    if (user == null) return;
+
     int index = categories.indexWhere((c) => c.id == category.id);
     if (index != -1) {
       categories[index] = Category(id: category.id, name: newName);
-      await StorageService.saveCategories(categories); // ⬅️ simpan
+      await StorageService.saveCategories(user.username, categories);
       setState(() {});
     }
   }
 
   Future<void> _deleteCategory(Category category) async {
+    final user = await StorageService.getCurrentUser();
+    if (user == null) return;
+
     categories.removeWhere((c) => c.id == category.id);
-    await StorageService.saveCategories(categories); // ⬅️ simpan
+    await StorageService.saveCategories(user.username, categories);
     setState(() {});
   }
 
@@ -66,7 +81,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
           ElevatedButton(
             onPressed: () async {
               if (controller.text.isNotEmpty) {
-                await _addCategory(controller.text); // ⬅️ simpan kategori baru
+                await _addCategory(controller.text);
               }
               Navigator.pop(context);
             },
@@ -92,7 +107,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
           ElevatedButton(
             onPressed: () async {
               if (controller.text.isNotEmpty) {
-                await _editCategory(category, controller.text); // ⬅️ simpan edit
+                await _editCategory(category, controller.text);
               }
               Navigator.pop(context);
             },
