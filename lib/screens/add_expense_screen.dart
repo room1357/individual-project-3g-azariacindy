@@ -19,20 +19,39 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   String? selectedCategory;
   List<Category> categories = [];
 
+  // state untuk shared users
+  List<String> allUsernames = [];
+  List<String> selectedUsers = [];
+
+  String? currentUsername;
+
   @override
   void initState() {
     super.initState();
-    _loadCategories();
+    _initAll();
   }
 
-  Future<void> _loadCategories() async {
+  Future<void> _initAll() async {
     final user = await StorageService.getCurrentUser();
     if (user == null) return;
 
+    currentUsername = user.username;
     await StorageService.ensureDefaultCategories(user.username);
-
     categories = await StorageService.loadCategories(user.username);
+    allUsernames = await StorageService.getAllUsernames();
+
+    // hilangkan username current dari daftar opsi share
+    allUsernames.remove(user.username);
+
     setState(() {});
+  }
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    amountController.dispose();
+    descController.dispose();
+    super.dispose();
   }
 
   @override
@@ -75,17 +94,49 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               controller: descController,
               decoration: const InputDecoration(labelText: "Deskripsi"),
             ),
+
+            const SizedBox(height: 10),
+
+            // Bagian shared users
+            if (allUsernames.isNotEmpty) ...[
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text("Bagikan dengan pengguna lain:"),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: allUsernames.map((username) {
+                  final selected = selectedUsers.contains(username);
+                  return FilterChip(
+                    label: Text(username),
+                    selected: selected,
+                    onSelected: (val) {
+                      setState(() {
+                        if (val) {
+                          selectedUsers.add(username);
+                        } else {
+                          selectedUsers.remove(username);
+                        }
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
+            ],
+
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
                 if (titleController.text.isEmpty ||
                     amountController.text.isEmpty ||
-                    selectedCategory == null) {
+                    selectedCategory == null ||
+                    currentUsername == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Lengkapi semua field terlebih dahulu')),
+                  );
                   return;
                 }
-
-                final user = await StorageService.getCurrentUser();
-                if (user == null) return;
 
                 final newExpense = Expense(
                   id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -94,10 +145,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   category: selectedCategory!,
                   date: DateTime.now(),
                   description: descController.text,
+                  owner: currentUsername!,
+                  sharedWith: selectedUsers,
                 );
 
-                await ExpenseService.addExpense(user.username, newExpense);
-                Navigator.pop(context, true);
+                await ExpenseService.addExpense(currentUsername!, newExpense);
+                if (context.mounted) Navigator.pop(context, true);
               },
               child: const Text('Simpan'),
             ),

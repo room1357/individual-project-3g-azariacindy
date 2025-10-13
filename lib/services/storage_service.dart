@@ -9,29 +9,32 @@ class StorageService {
   static const String _currentUserKey = "currentUser";
 
   /// ==================== USER MANAGEMENT ====================
-
   static Future<List<AppUser>> loadUsers() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonString = prefs.getString(_usersKey);
     if (jsonString == null) return [];
 
-    final data = jsonDecode(jsonString) as List;
-    return data
-        .map((u) => AppUser(
-              username: u["username"],
-              email: u["email"],
-              password: u["password"],
-            ))
-        .toList();
+    try {
+      final data = jsonDecode(jsonString) as List;
+      return data
+          .map((u) => AppUser(
+                username: u["username"],
+                email: u["email"],
+                password: u["password"],
+              ))
+          .toList();
+    } catch (e) {
+      return [];
+    }
   }
 
   static Future<void> updateUser(AppUser oldUser, AppUser newUser) async {
-  final users = await loadUsers();
-  final index = users.indexWhere((u) => u.username == oldUser.username);
-  if (index != -1) {
-    users[index] = newUser;
-    await saveUsers(users);
-  }
+    final users = await loadUsers();
+    final index = users.indexWhere((u) => u.username == oldUser.username);
+    if (index != -1) {
+      users[index] = newUser;
+      await saveUsers(users);
+    }
   }
 
   static Future<void> saveUsers(List<AppUser> users) async {
@@ -60,12 +63,16 @@ class StorageService {
     final jsonString = prefs.getString(_currentUserKey);
     if (jsonString == null) return null;
 
-    final data = jsonDecode(jsonString);
-    return AppUser(
-      username: data["username"],
-      email: data["email"],
-      password: data["password"],
-    );
+    try {
+      final data = jsonDecode(jsonString);
+      return AppUser(
+        username: data["username"],
+        email: data["email"],
+        password: data["password"],
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
   static Future<void> clearCurrentUser() async {
@@ -74,57 +81,60 @@ class StorageService {
   }
 
   static Future<void> deleteUserData(String username) async {
-  final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
 
-  await prefs.remove('expenses_$username');
-  await prefs.remove('categories_$username');
-  // Jika kamu menyimpan setting lain per user, tambahkan di sini juga.
+    await prefs.remove('expenses_$username');
+    await prefs.remove('categories_$username');
   }
 
   /// ==================== EXPENSE ====================
-
   static Future<void> saveExpenses(String username, List<Expense> expenses) async {
     final prefs = await SharedPreferences.getInstance();
-    final key = "expenses_$username";
-
-    final jsonData = expenses.map((e) => {
+    final data = expenses.map((e) => {
           "id": e.id,
           "title": e.title,
           "amount": e.amount,
           "category": e.category,
           "date": e.date.toIso8601String(),
           "description": e.description,
+          "owner": e.owner,
+          "sharedWith": e.sharedWith,
         }).toList();
-    await prefs.setString(key, jsonEncode(jsonData));
+
+    await prefs.setString('expenses_$username', jsonEncode(data));
   }
 
   static Future<List<Expense>> loadExpenses(String username) async {
     final prefs = await SharedPreferences.getInstance();
-    final key = "expenses_$username";
-    final jsonString = prefs.getString(key);
+    final jsonString = prefs.getString('expenses_$username');
     if (jsonString == null) return [];
 
-    final data = jsonDecode(jsonString) as List;
-    return data
-        .map((e) => Expense(
-              id: e["id"],
-              title: e["title"],
-              amount: (e["amount"] as num).toDouble(),
-              category: e["category"],
-              date: DateTime.parse(e["date"]),
-              description: e["description"],
-            ))
-        .toList();
+    try {
+      final data = jsonDecode(jsonString) as List;
+      return data
+          .map((e) => Expense(
+                id: e["id"],
+                title: e["title"],
+                amount: (e["amount"] as num).toDouble(),
+                category: e["category"],
+                date: DateTime.parse(e["date"]),
+                description: e["description"],
+                owner: e["owner"] ?? username,
+                sharedWith: List<String>.from(e["sharedWith"] ?? []),
+              ))
+          .toList();
+    } catch (ex) {
+      return [];
+    }
   }
 
   /// ==================== CATEGORY ====================
-
   static Future<void> ensureDefaultCategories(String username) async {
     final prefs = await SharedPreferences.getInstance();
     final key = "categories_$username";
 
     final existing = prefs.getString(key);
-    if (existing != null) return; // sudah ada, tidak perlu tambah default
+    if (existing != null) return;
 
     final defaultCategories = [
       Category(id: "1", name: "Makanan"),
@@ -150,7 +160,18 @@ class StorageService {
     final jsonString = prefs.getString(key);
     if (jsonString == null) return [];
 
-    final data = jsonDecode(jsonString) as List;
-    return data.map((c) => Category(id: c["id"], name: c["name"])).toList();
+    try {
+      final data = jsonDecode(jsonString) as List;
+      return data.map((c) => Category(id: c["id"], name: c["name"])).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// ==================== UTILITY ====================
+  // Mengambil semua username terdaftar (dipakai untuk fitur sharing)
+  static Future<List<String>> getAllUsernames() async {
+    final users = await loadUsers();
+    return users.map((u) => u.username).toList();
   }
 }

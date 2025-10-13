@@ -22,6 +22,10 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
   List<String> categories = [];
   AppUser? currentUser;
 
+  // keep sharedWith editable
+  List<String> allUsernames = [];
+  List<String> selectedUsers = [];
+
   @override
   void initState() {
     super.initState();
@@ -32,6 +36,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
     _descriptionController =
         TextEditingController(text: widget.expense.description);
     selectedCategory = widget.expense.category;
+    selectedUsers = List<String>.from(widget.expense.sharedWith);
 
     _loadUserAndCategories();
   }
@@ -40,10 +45,22 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
     final user = await StorageService.getCurrentUser();
     if (user == null) return;
     final loaded = await StorageService.loadCategories(user.username);
+    final usernames = await StorageService.getAllUsernames();
+    usernames.remove(user.username);
+
     setState(() {
       currentUser = user;
       categories = loaded.map((c) => c.name).toList();
+      allUsernames = usernames;
     });
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _amountController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
   }
 
   @override
@@ -78,6 +95,32 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
               controller: _descriptionController,
               decoration: const InputDecoration(labelText: 'Deskripsi'),
             ),
+
+            const SizedBox(height: 10),
+            if (allUsernames.isNotEmpty) ...[
+              const Align(alignment: Alignment.centerLeft, child: Text('Bagikan dengan pengguna lain:')),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: allUsernames.map((username) {
+                  final sel = selectedUsers.contains(username);
+                  return FilterChip(
+                    label: Text(username),
+                    selected: sel,
+                    onSelected: (v) {
+                      setState(() {
+                        if (v) {
+                          if (!selectedUsers.contains(username)) selectedUsers.add(username);
+                        } else {
+                          selectedUsers.remove(username);
+                        }
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
+            ],
+
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
@@ -90,6 +133,8 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                   category: selectedCategory ?? widget.expense.category,
                   date: widget.expense.date,
                   description: _descriptionController.text,
+                  owner: widget.expense.owner,
+                  sharedWith: selectedUsers,
                 );
 
                 await ExpenseService.updateExpense(
