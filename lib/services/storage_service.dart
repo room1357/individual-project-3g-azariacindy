@@ -58,4 +58,46 @@ class StorageService {
       name: c["name"],
     )).toList();
   }
+
+  // ================== USER AUTH (UPDATE UNTUK EMAIL & USERNAME) ==================
+  static const String _usernameKey = "username";
+  static const String _emailKey = "email";
+  static const String _passwordKey = "password";
+  static const String _isLoggedInKey = "isLoggedIn";
+
+  /// Simpan data user saat register
+  static Future<void> saveUser(String username, String email, String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_usernameKey, username);
+    await prefs.setString(_emailKey, email);
+    await prefs.setString(_passwordKey, password);
+  }
+
+  /// Ambil data user yang tersimpan
+  static Future<Map<String, String?>> getUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      "username": prefs.getString(_usernameKey),
+      "email": prefs.getString(_emailKey),
+      "password": prefs.getString(_passwordKey),
+    };
+  }
+
+  /// Simpan status login
+  static Future<void> setLoginStatus(bool isLoggedIn) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_isLoggedInKey, isLoggedIn);
+  }
+
+  /// Ambil status login
+  static Future<bool> getLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_isLoggedInKey) ?? false;
+  }
+
+  /// Logout
+  static Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_isLoggedInKey, false);
+  }
 }

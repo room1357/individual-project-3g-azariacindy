@@ -7,6 +7,7 @@ import 'advanced_expense_list_screen.dart';
 import 'catergory_screen.dart';
 import 'statistics_screen.dart';
 import '../services/expense_service.dart';
+import '../services/storage_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -19,12 +20,12 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: Colors.blue,
         actions: [
           IconButton(
-            onPressed: () {
-              // Logout dengan pushAndRemoveUntil
+            onPressed: () async {
+              await StorageService.logout();
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => const LoginScreen()),
-                (route) => false, // Hapus semua route sebelumnya
+                (route) => false,
               );
             },
             icon: Icon(Icons.logout),
