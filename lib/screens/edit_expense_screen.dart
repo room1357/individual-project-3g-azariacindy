@@ -68,8 +68,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Pengeluaran'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        // Use theme AppBar colors
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

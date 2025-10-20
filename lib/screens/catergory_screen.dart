@@ -123,8 +123,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Kelola Kategori"),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        // Use theme AppBar colors
       ),
       body: categories.isEmpty
           ? const Center(child: Text("Belum ada kategori"))

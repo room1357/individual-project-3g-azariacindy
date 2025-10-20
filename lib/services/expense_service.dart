@@ -35,6 +35,19 @@ class ExpenseService {
     }
   }
 
+  // Sinkronisasi shared expenses untuk semua user yang terlibat
+  static Future<void> syncSharedExpenses(Expense expense) async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // Update untuk owner
+    await loadData(expense.owner);
+    
+    // Update untuk semua user yang di-share
+    for (var username in expense.sharedWith) {
+      await loadData(username);
+    }
+  }
+
   // Sinkron, kembalikan cache (jika perlu async, gunakan getExpensesAsync)
   static List<Expense> getExpenses(String username) {
     return _allExpenses[username] ?? [];
@@ -53,6 +66,9 @@ class ExpenseService {
     userExpenses.add(expense);
     _allExpenses[username] = userExpenses;
     await StorageService.saveExpenses(username, userExpenses);
+    
+    // Sinkronisasi shared expenses
+    await syncSharedExpenses(expense);
   }
 
   static Future<void> updateExpense(String username, Expense updatedExpense) async {
@@ -75,6 +91,9 @@ class ExpenseService {
         await StorageService.saveExpenses(updatedExpense.owner, ownerExpenses);
       }
     }
+    
+    // Sinkronisasi shared expenses
+    await syncSharedExpenses(updatedExpense);
   }
 
   static Future<void> deleteExpense(String username, String id) async {
@@ -96,5 +115,52 @@ class ExpenseService {
         // Kita tidak menghapus data owner di sini (tidak diizinkan).
       }
     }
+  }
+
+  // Unshare expense dari user tertentu
+  static Future<void> unshareExpense(String ownerUsername, String expenseId, String targetUsername) async {
+    final ownerExpenses = _allExpenses[ownerUsername] ?? [];
+    final expenseIndex = ownerExpenses.indexWhere((e) => e.id == expenseId);
+    
+    if (expenseIndex != -1) {
+      final expense = ownerExpenses[expenseIndex];
+      final updatedSharedWith = List<String>.from(expense.sharedWith);
+      updatedSharedWith.remove(targetUsername);
+      
+      final updatedExpense = Expense(
+        id: expense.id,
+        title: expense.title,
+        amount: expense.amount,
+        category: expense.category,
+        date: expense.date,
+        description: expense.description,
+        owner: expense.owner,
+        sharedWith: updatedSharedWith,
+      );
+      
+      ownerExpenses[expenseIndex] = updatedExpense;
+      _allExpenses[ownerUsername] = ownerExpenses;
+      await StorageService.saveExpenses(ownerUsername, ownerExpenses);
+      
+      // Hapus dari cache target user
+      final targetExpenses = _allExpenses[targetUsername] ?? [];
+      targetExpenses.removeWhere((e) => e.id == expenseId && e.owner == ownerUsername);
+      _allExpenses[targetUsername] = targetExpenses;
+      
+      // Sinkronisasi untuk semua user yang masih terlibat
+      await syncSharedExpenses(updatedExpense);
+    }
+  }
+
+  // Get owned expenses (expenses yang dimiliki user)
+  static List<Expense> getOwnedExpenses(String username) {
+    final allExpenses = _allExpenses[username] ?? [];
+    return allExpenses.where((e) => e.owner == username).toList();
+  }
+
+  // Get shared expenses (expenses yang di-share ke user)
+  static List<Expense> getSharedExpenses(String username) {
+    final allExpenses = _allExpenses[username] ?? [];
+    return allExpenses.where((e) => e.owner != username && e.sharedWith.contains(username)).toList();
   }
 }

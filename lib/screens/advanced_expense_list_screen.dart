@@ -21,6 +21,7 @@ class _AdvancedExpenseListScreenState extends State<AdvancedExpenseListScreen> {
   List<String> categories = ['Semua'];
   String selectedCategory = 'Semua';
   TextEditingController searchController = TextEditingController();
+  String? currentUsername;
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class _AdvancedExpenseListScreenState extends State<AdvancedExpenseListScreen> {
     final loadedCategories = await StorageService.loadCategories(user.username);
 
     setState(() {
+      currentUsername = user.username;
       filteredExpenses = ExpenseService.getExpenses(user.username);
       categories = ['Semua', ...loadedCategories.map((c) => c.name)];
     });
@@ -111,8 +113,7 @@ class _AdvancedExpenseListScreenState extends State<AdvancedExpenseListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pengeluaran Advanced'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        // Use theme AppBar colors
         actions: [
           IconButton(
             icon: const Icon(Icons.picture_as_pdf),
@@ -182,58 +183,78 @@ class _AdvancedExpenseListScreenState extends State<AdvancedExpenseListScreen> {
                         margin: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 4),
                         child: ListTile(
+                          leading: expense.owner == currentUsername
+                              ? const Icon(Icons.person, color: Colors.green)
+                              : const Icon(Icons.share, color: Colors.blue),
                           title: Text(expense.title),
-                          subtitle: Text(
-                              '${expense.category} • ${expense.formattedDate}'),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('${expense.category} • ${expense.formattedDate}'),
+                              if (expense.owner != currentUsername)
+                                Text(
+                                  'Dibagikan oleh: ${expense.owner}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.blue,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                            ],
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit,
-                                    color: Colors.orange),
-                                onPressed: () async {
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          EditExpenseScreen(expense: expense),
-                                    ),
-                                  );
-                                  if (result == true) {
-                                    await _loadExpensesAndCategories();
-                                  }
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete,
-                                    color: Colors.red),
-                                onPressed: () async {
-                                  final confirm = await showDialog<bool>(
-                                    context: context,
-                                    builder: (ctx) => AlertDialog(
-                                      title: const Text("Hapus Pengeluaran?"),
-                                      content: const Text(
-                                          "Apakah kamu yakin ingin menghapus data ini?"),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(ctx, false),
-                                          child: const Text("Batal"),
-                                        ),
-                                        ElevatedButton(
-                                          onPressed: () =>
-                                              Navigator.pop(ctx, true),
-                                          child: const Text("Hapus"),
-                                        ),
-                                      ],
-                                    ),
-                                  );
+                              if (expense.owner == currentUsername) ...[
+                                IconButton(
+                                  icon: const Icon(Icons.edit,
+                                      color: Colors.orange),
+                                  onPressed: () async {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            EditExpenseScreen(expense: expense),
+                                      ),
+                                    );
+                                    if (result == true) {
+                                      await _loadExpensesAndCategories();
+                                    }
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
+                                  onPressed: () async {
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        title: const Text("Hapus Pengeluaran?"),
+                                        content: const Text(
+                                            "Apakah kamu yakin ingin menghapus data ini?"),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(ctx, false),
+                                            child: const Text("Batal"),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: () =>
+                                                Navigator.pop(ctx, true),
+                                            child: const Text("Hapus"),
+                                          ),
+                                        ],
+                                      ),
+                                    );
 
-                                  if (confirm == true) {
-                                    _deleteExpense(expense.id);
-                                  }
-                                },
-                              ),
+                                    if (confirm == true) {
+                                      _deleteExpense(expense.id);
+                                    }
+                                  },
+                                ),
+                              ] else ...[
+                                const Icon(Icons.lock, color: Colors.grey),
+                              ],
                             ],
                           ),
                         ),

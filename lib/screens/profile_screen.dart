@@ -115,8 +115,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Profil Saya"),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        // Use theme AppBar colors
         actions: [
           IconButton(
             icon: Icon(_isEditing ? Icons.close : Icons.edit),
@@ -134,9 +133,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           key: _formKey,
           child: Column(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 40,
-                backgroundColor: Colors.blueAccent,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 child: Icon(Icons.person, size: 50, color: Colors.white),
               ),
               const SizedBox(height: 20),
