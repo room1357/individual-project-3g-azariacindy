@@ -35,6 +35,7 @@ flutter:
 
   assets:
     - assets/images/logo_pink_pocket.png
+    - assets/onboarding/
 
 flutter_icons:
   android: true
