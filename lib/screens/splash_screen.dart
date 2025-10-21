@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/storage_service.dart';
 import 'login_screen.dart';
 import 'home_screen.dart';
+import 'onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -39,15 +41,26 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _navigateToNext() async {
     await Future.delayed(const Duration(seconds: 3));
 
+    final prefs = await SharedPreferences.getInstance();
     final user = await StorageService.getCurrentUser();
+    final seenOnboarding = prefs.getBool('seenOnboarding') ?? false;
+    
     if (!mounted) return;
 
-    if (user != null) {
+    if (!seenOnboarding) {
+      // User belum pernah melihat onboarding
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+      );
+    } else if (user != null) {
+      // User sudah login
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
     } else {
+      // User belum login
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -64,31 +77,83 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFE4EC), // 💗 Warna pink pastel lembut
-      body: Center(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // 🔹 Logo kamu
-              Image.asset(
-                'assets/images/logo_pink_pocket.png',
-                width: 120,
-                height: 120,
-              ),
-              const SizedBox(height: 20),
-              // 🔹 Nama aplikasi
-              const Text(
-                "PinkPocket",
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF006D5B), // hijau dari logo kamu
-                  letterSpacing: 0.5,
-                ),
-              ),
+      backgroundColor: Colors.white,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFE91E63),
+              Color(0xFFF06292),
             ],
+          ),
+        ),
+        child: Center(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo PinkPocket
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Image.asset(
+                      'assets/images/logo_pink_pocket.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 30),
+                
+                // Nama aplikasi
+                const Text(
+                  "PinkPocket",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                
+                // Tagline
+                const Text(
+                  "Kelola Keuangan dengan Mudah",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white70,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 50),
+                
+                // Loading indicator
+                const SizedBox(
+                  width: 30,
+                  height: 30,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 3,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

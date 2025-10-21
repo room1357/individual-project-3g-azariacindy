@@ -46,8 +46,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Daftar Pengeluaran'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        // Use theme AppBar colors
       ),
       body: expenses.isEmpty
           ? const Center(child: Text("Belum ada pengeluaran"))
@@ -58,9 +57,25 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   child: ListTile(
+                    leading: expense.owner == currentUser?.username
+                        ? const Icon(Icons.person, color: Colors.green)
+                        : const Icon(Icons.share, color: Colors.blue),
                     title: Text(expense.title),
-                    subtitle:
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text('${expense.category} • ${expense.formattedDate}'),
+                        if (expense.owner != currentUser?.username)
+                          Text(
+                            'Dibagikan oleh: ${expense.owner}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                      ],
+                    ),
                     trailing: Text(
                       expense.formattedAmount,
                       style: const TextStyle(

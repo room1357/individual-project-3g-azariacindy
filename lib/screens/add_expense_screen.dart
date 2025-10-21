@@ -59,8 +59,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Tambah Pengeluaran"),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        // Use theme AppBar colors
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

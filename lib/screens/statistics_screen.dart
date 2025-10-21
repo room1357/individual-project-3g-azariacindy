@@ -34,8 +34,7 @@ class StatisticsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Statistik Pengeluaran"),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        // Use theme AppBar colors
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -103,7 +102,7 @@ class StatisticsScreen extends StatelessWidget {
                         barRods: [
                           BarChartRodData(
                             toY: data.value,
-                            color: Colors.blue,
+                            color: Theme.of(context).colorScheme.primary,
                             width: 20,
                           ),
                         ],
