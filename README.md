@@ -74,7 +74,7 @@ Berikut dokumentasi tampilan antarmuka aplikasi **PinkPocket**, aplikasi manajem
 ### 💸 Expense Management
 | Daftar Pengeluaran | Tambah Pengeluaran | Edit Pengeluaran | Hapus Pengeluaran |
 |:--:|:--:|:--:|:--:|
-| ![Pengeluaran](assets/screenshots/12.%20Pengeluaran.png) | ![TambahPengeluaran](assets/screenshots/14.%20Tambah%20Pengeluaran.png) | ![EditPengeluaran](assets/screenshots/15.%20Edit%20Pengeluaran.png) | ![HapusPengeluaran](assets/screenshots/16.%20Hapus%20Pengeluaran.png) |
+| ![Pengeluaran](assets/screenshots/13.%20Pengeluaran.png) | ![TambahPengeluaran](assets/screenshots/14.%20Tambah%20Pengeluaran.png) | ![EditPengeluaran](assets/screenshots/15.%20Edit%20Pengeluaran.png) | ![HapusPengeluaran](assets/screenshots/16.%20Hapus%20Pengeluaran.png) |
 | **Menampilkan daftar seluruh transaksi pengeluaran.** | **Form menambah data pengeluaran baru.** | **Form untuk mengubah data pengeluaran.** | **Dialog konfirmasi penghapusan data.** |
 
 ---
